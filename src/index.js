@@ -1,60 +1,68 @@
-import './css/styles.css';
-import { FetchDataCountries } from './js/fetchCountries';
+import './sass/main.scss';
+import { gallery } from './js/lightBoxGallery';
+import { FetchDataPhotos } from './js/fetchPhotos';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import debounce from 'lodash.debounce';
-const DEBOUNCE_DELAY = 300;
 
-let findCountries = new FetchDataCountries();
+const findPhotos = new FetchDataPhotos();
 
 const refs = {
-  counrtyInput: document.querySelector('#search-box'),
-  counrtyList: document.querySelector('.country-list'),
-  counrtyBlock: document.querySelector('.country-info'),
+  queryInput: document.querySelector('.search-input'),
+  searchForm: document.querySelector('.search-form'),
+  photoBlock: document.querySelector('.photo-card'),
 };
 
-refs.counrtyInput.addEventListener('input', debounce(onInputFindCountry, DEBOUNCE_DELAY));
+console.dir(refs.searchForm);
 
-function onInputFindCountry(event) {
-  findCountries
-    .fetchCountries(event.target.value)
-    .then(countries => createCountriesMarkup(countries))
+refs.searchForm.addEventListener('submit', onClickFindPhotos);
+
+function onClickFindPhotos(event) {
+  event.preventDefault();
+  // Проверка на пустую строку
+  if (!event.target.elements['search-box'].value) {
+    Notify.failure('Write what you want to find please');
+    return;
+  }
+  findPhotos
+    .fetchPhotos(event.target.elements['search-box'].value)
+    .then(photos => createPhotosMarkup(photos))
     .catch(error => {
-      Notify.failure('Oops, there is no country with that name');
-      refs.counrtyBlock.innerHTML = '';
-      refs.counrtyList.innerHTML = '';
+      Notify.failure('ERROR', error);
     });
 }
 
-function createCountriesMarkup(countries) {
-
-  if (countries.length > 1 && countries.length <= 10) {
-    refs.counrtyBlock.innerHTML = '';
-    const markupList = countries.map(
-      country => `<li><div class="country-wrapper">
-        <img src=${country.flags.svg} alt=${country.name.common} width="25" height="25" />
-        <p class="country-name-small">${country.name.common}</p>
-      </div></li>`,
+function createPhotosMarkup(photos) {
+  if (photos.hits.length === 0) {
+    refs.photoBlock.innerHTML = '';
+    Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+  } else {
+    console.log(photos.hits[0]);
+    const markup = photos.hits.map(
+      ({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => `
+			    <a class="gallery__link" href="${largeImageURL}">
+			<img src='${webformatURL}' alt="${tags}" loading="lazy" class="gallery__image"/>
+  <div class="info">
+    <p class="info-item">
+      <b>Likes: ${likes}</b>
+    </p>
+    <p class="info-item">
+      <b>Views: ${views}</b>
+    </p>
+    <p class="info-item">
+      <b>Comments: ${comments}</b>
+    </p>
+    <p class="info-item">
+      <b>Downloads: ${downloads}</b>
+    </p>
+  </div>
+	</a>`,
     );
-    refs.counrtyList.innerHTML = markupList.join('');
-  } else if (countries.length === 1) {
-    refs.counrtyList.innerHTML = '';
-    const countryLangs = Object.values(countries[0].languages).join(', ');
-    console.log(countryLangs);
-    let oneCountryMarkup = `<div class="country-wrapper">
-        <img src=${countries[0].flags.svg} alt=${countries[0].name.common} width="25" height="25" />
-        <p class="country-name">${countries[0].name.common}</p>
-      </div>
-      <p><b>Capital:</b>  ${countries[0].capital}</p>
-      <p><b>Population:</b>  ${countries[0].population}</p>
-      <p><b>Lanuguages:</b>  ${countryLangs}</p>`;
-    refs.counrtyBlock.innerHTML = oneCountryMarkup;
-  } else if (countries.length > 10) {
-    refs.counrtyBlock.innerHTML = '';
-    refs.counrtyList.innerHTML = '';
-    Notify.info('Too many matches found. Please enter a more specific name.');
+    refs.photoBlock.innerHTML = markup.join('');
   }
+  gallery.refresh();
 }
 
-// добавить листенер на инпут с дебаунсом
+// 5. Переписать функции на async / await
 
-// сделать отдельную функцию которая будет рисовать интерфейст в зависимости от того сколько пришло элементом (длинна массива) если много - как элементы списка в список если один в див
+// 3. Добавить пагинацию по кнопке и добавить кнопку пагинации.
+
+// 4. Сделать задачи из пункта Дополнительно
