@@ -55,6 +55,7 @@ function publishFirstMarkup(colection) {
     refs.photoBlock.innerHTML = markup.join('');
     gallery.refresh();
     refs.loadMore.classList.remove('visually-hidden');
+    scrollToTop();
   }
 }
 
@@ -114,4 +115,8 @@ function smoothScrolling() {
     top: cardHeight * 1.3,
     behavior: 'smooth',
   });
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
