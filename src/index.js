@@ -24,18 +24,18 @@ async function onClickFindPhotos(event) {
     Notify.failure('Write what photos we should look for please');
     return;
   }
-  try {
-    page = 1;
-    const photosByValue = await findPhotos.fetchPhotos(
-      event.target.elements['search-box'].value,
-      page,
-    );
-    const markUpByValue = await publishFirstMarkup(photosByValue);
-    totalHits = photosByValue.totalHits;
-    page += 1;
-  } catch (error) {
-    Notify.failure('ERROR', error);
-  }
+  // try {
+  page = 1;
+  const photosByValue = await findPhotos.fetchPhotos(
+    event.target.elements['search-box'].value,
+    page,
+  );
+  const markUpByValue = await publishFirstMarkup(photosByValue);
+  totalHits = photosByValue.totalHits;
+  page += 1;
+  // } catch (error) {
+  //   Notify.failure('ERROR', error);
+  // }
 }
 
 async function fetchMorePhotos() {
